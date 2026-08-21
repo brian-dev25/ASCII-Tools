@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASCII Art Generator</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- SPLASH SCREEN -->
+    <div id="splash" class="screen active">
+        <div class="splash-content">
+            <div class="splash-logo">&gt;_</div>
+            <div class="splash-title">ASCII Art Generator</div>
+            <div class="splash-sub">Cargando motores...</div>
+            <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+            <div class="splash-status" id="splashStatus">Iniciando</div>
+        </div>
+    </div>
+
+    <!-- ENGINE SELECTOR -->
+    <div id="selector" class="screen">
+        <div class="selector-title-bar" id="selectorTitleBar">
+            <span class="selector-title">Elije Motor</span>
+            <div class="window-controls">
+                <button class="win-btn" id="minBtn" title="Minimizar">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/></svg>
+                </button>
+                <button class="win-btn" id="maxBtn" title="Maximizar">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+                </button>
+                <button class="win-btn close-btn" id="closeBtn" title="Cerrar">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                </button>
+            </div>
+        </div>
+        <div class="selector-grid" id="engineGrid"></div>
+    </div>
+
+        <!-- MAIN VIEWER -->
+    <div id="viewer" class="screen">
+        <div class="viewer-title-bar" id="viewerTitleBar">
+            <div class="viewer-title-left">
+                <button class="back-btn" id="backBtn" title="Volver">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+                </button>
+                <span id="engineName">Motor</span>
+            </div>
+            <div class="window-controls">
+                <button class="win-btn" id="minBtn2" title="Minimizar">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/></svg>
+                </button>
+                <button class="win-btn" id="maxBtn2" title="Maximizar">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+                </button>
+                <button class="win-btn close-btn" id="closeBtn2" title="Cerrar">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Engine: Local (JS) -->
+        <div id="localControls" class="controls">
+            <label>-W <input type="number" id="width" min="10" max="300" value="80"></label>
+            <label>-H <input type="number" id="height" min="0" max="200" value="0" placeholder="auto"></label>
+            <div class="sep"></div>
+            <label>Modo:
+                <select id="mode">
+                    <option value="ascii">ASCII</option>
+                    <option value="braille">Braille (-b)</option>
+                    <option value="complex">Complejo (-c)</option>
+                    <option value="simple">Simple</option>
+                </select>
+            </label>
+            <label>-m <input type="text" id="customMap" placeholder=" .-+#@" style="width:80px"></label>
+            <div class="sep"></div>
+            <label>Threshold <input type="range" id="threshold" min="0" max="255" value="128"> <span id="thresholdVal">128</span></label>
+        </div>
+        <div id="localControls2" class="controls">
+            <label><input type="checkbox" id="grayscale"> -g Grayscale</label>
+            <label><input type="checkbox" id="negative"> -n Negative</label>
+            <label><input type="checkbox" id="flipX"> -x FlipX</label>
+            <label><input type="checkbox" id="flipY"> -y FlipY</label>
+            <div class="sep"></div>
+            <label>Color: <input type="color" id="color" value="#CE3669"></label>
+            <label>Fondo:
+                <select id="bg">
+                    <option value="transparent">Transparente</option>
+                    <option value="#1a1432" selected>Terminal</option>
+                    <option value="#000000">Negro</option>
+                    <option value="#300a24">Ubuntu</option>
+                </select>
+            </label>
+            <div class="sep"></div>
+            <label>Size <input type="range" id="fontSize" min="6" max="30" value="13"> <span id="fontSizeVal">13</span></label>
+        </div>
+
+        <!-- Engine: artty (Python) -->
+        <div id="arttyControls" class="controls" style="display:none;">
+            <label>Ancho <input type="number" id="arttyWidth" min="10" max="500" value="100"></label>
+            <label>Threshold <input type="range" id="arttyThreshold" min="0" max="255" value="50"> <span id="arttyThresholdVal">50</span></label>
+            <div class="sep"></div>
+            <label>Boost <input type="range" id="arttyBoost" min="10" max="20" value="12"> <span id="arttyBoostVal">1.2</span></label>
+            <div class="sep"></div>
+            <label><input type="checkbox" id="arttyColor" checked> Color ANSI</label>
+        </div>
+
+        <!-- Engine: img2braille (Python) -->
+        <div id="img2brailleControls" class="controls" style="display:none;">
+            <label>Ancho <input type="number" id="i2bWidth" min="10" max="500" value="200"></label>
+            <label id="i2bHeightControl" style="display:none;">Alto <input type="number" id="i2bHeight" min="0" max="300" value="0" placeholder="auto"></label>
+            <div class="sep"></div>
+            <label><input type="checkbox" id="i2bDither" checked> Dither</label>
+            <label><input type="checkbox" id="i2bInvert" checked> Invertir</label>
+            <label><input type="checkbox" id="i2bAutocontrast" checked> AutoContraste</label>
+            <label><input type="checkbox" id="i2bMobile"> Modo Celulares</label>
+            <div class="sep"></div>
+            <label>Calc:
+                <select id="i2bCalc">
+                    <option value="RGBsum" selected>RGBsum</option>
+                    <option value="R">Rojo</option>
+                    <option value="G">Verde</option>
+                    <option value="B">Azul</option>
+                    <option value="BW">B/N</option>
+                </select>
+            </label>
+            <label><input type="checkbox" id="i2bNoempty"> No vacío</label>
+        </div>
+
+        <!-- Engine: External (web / CLI) -->
+        <div id="externalView" style="display:none; flex:1; flex-direction:column; overflow:hidden;">
+            <iframe id="externalFrame" src="" style="width:100%; height:100%; border:none; display:none;"></iframe>
+            <div id="cliPlaceholder" style="display:none; flex:1;" class="drop-zone-outer">
+                <div class="drop-content">
+                    <div class="icon">[ ]</div>
+                    <p id="cliMsg">Motor CLI detectado</p>
+                    <p class="hint">Click o arrastra una imagen</p>
+                </div>
+            </div>
+            <div id="cliPreview" style="display:none; flex:1; overflow:auto; padding:12px;">
+                <pre class="ascii" id="cliAscii"></pre>
+            </div>
+        </div>
+
+        <!-- Local preview -->
+        <div class="preview" id="preview">
+            <div class="drop-zone" id="dropZone">
+                <div class="drop-content">
+                    <div class="icon">[ ]</div>
+                    <p>Arrastra una imagen aqui</p>
+                    <p class="hint">o haz clic para seleccionar</p>
+                </div>
+            </div>
+            <pre class="ascii" id="ascii"></pre>
+        </div>
+
+        <div class="export-bar">
+            <button id="btnCopy">Copiar TXT</button>
+            <button id="btnDownload">Descargar .txt</button>
+            <button id="btnNew">Nueva imagen</button>
+            <span class="info" id="info"></span>
+        </div>
+    </div>
+
+    <input type="file" id="fileInput" accept="image/*" style="display:none;">
+    <input type="file" id="cliFileInput" accept="image/*" style="display:none;">
+    <canvas id="canvas" style="display:none;"></canvas>
+    <script src="main.js"></script>
+</body>
+</html>

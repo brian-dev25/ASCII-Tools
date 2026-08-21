@@ -1,0 +1,14 @@
+{
+  "name": "ascii-viewer",
+  "version": "1.0.0",
+  "scripts": {
+    "tauri": "tauri",
+    "dev": "tauri dev",
+    "build": "tauri build"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.11.4",
+    "sharp": "^0.35.3",
+    "to-ico": "^1.1.5"
+  }
+}
