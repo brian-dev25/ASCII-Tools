@@ -438,6 +438,7 @@ async fn convert_img2braille_local(
         if !invert { command.arg("-i"); }
         if autocontrast { command.arg("-a"); }
         if noempty { command.arg("-n"); }
+        if mobile { command.arg("-m"); }
         command.output()
     }).await.unwrap_or_else(|_| Err(std::io::Error::new(std::io::ErrorKind::Other, "fail")))
       .map_err(|e| format!("Error ejecutando img2braille (Local): {}", e))?;

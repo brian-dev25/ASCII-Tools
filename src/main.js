@@ -67,7 +67,7 @@ const ENGINES = [
     {
         id: 'img2braille-local',
         name: 'img2braille (Local)',
-        desc: 'Variante incluida con la app. Permite fijar ancho y alto, o conservar la proporciÃ³n.',
+        desc: 'Variante incluida con la app. Permite fijar ancho y alto, o conservar la proporcion.',
         tag: 'LOCAL',
         tagClass: 'tag-local',
         icon: 'i2b+',
@@ -541,6 +541,7 @@ async function generateImg2braille() {
     const autocontrast = document.getElementById('i2bAutocontrast').checked;
     const calc = document.getElementById('i2bCalc').value;
     const noempty = document.getElementById('i2bNoempty').checked;
+    const mobile = document.getElementById('i2bMobile').checked;
     const generation = ++img2brailleGeneration;
 
     ascii.textContent = 'Convirtiendo con img2braille...';
@@ -560,7 +561,7 @@ async function generateImg2braille() {
         const result = await invoke(command, {
             imagePath: tempPath,
             width,
-            ...(currentEngine.id === 'img2braille-local' ? { height } : {}),
+            ...(currentEngine.id === 'img2braille-local' ? { height, mobile } : {}),
             dither,
             invert,
             autocontrast,
@@ -716,6 +717,7 @@ function setupEvents() {
     document.getElementById('i2bAutocontrast').addEventListener('change', () => { if (currentImg2brailleFile) generateImg2braille(); });
     document.getElementById('i2bCalc').addEventListener('change', () => { if (currentImg2brailleFile) generateImg2braille(); });
     document.getElementById('i2bNoempty').addEventListener('change', () => { if (currentImg2brailleFile) generateImg2braille(); });
+    document.getElementById('i2bMobile').addEventListener('change', () => { if (currentImg2brailleFile) generateImg2braille(); });
 }
 
 // ===== INIT =====
