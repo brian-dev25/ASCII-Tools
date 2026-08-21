@@ -3,6 +3,7 @@ dist/
 src-tauri/target/
 src-tauri/WixTools/
 src-tauri/BurnThemes/
+src-tauri/updater.key
 *.msi
 *.exe
 !.gitignore
