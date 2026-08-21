@@ -4,6 +4,7 @@ src-tauri/target/
 src-tauri/WixTools/
 src-tauri/BurnThemes/
 src-tauri/updater.key
+asd.txt
 *.msi
 *.exe
 !.gitignore
