@@ -118,6 +118,10 @@ async function refreshEngineAvailability(onProgress = () => {}) {
         const eng = cliEngines[index];
         onProgress(20 + Math.round((index / cliEngines.length) * 70), `Verificando ${eng.name}...`);
         eng.available = await checkTool(eng.tool);
+        if (eng.id === 'img2braille-local' && eng.available) {
+            onProgress(20 + Math.round(((index + 0.5) / cliEngines.length) * 70), `Actualizando ${eng.name}...`);
+            try { await invoke('ensure_img2braille_local'); } catch (_) {}
+        }
     }
     onProgress(100, 'Listo');
 }
@@ -128,6 +132,22 @@ async function runSplash() {
         progressFill.style.width = pct + '%';
         splashStatus.textContent = text;
     });
+
+    progressFill.style.width = '100%';
+    splashStatus.textContent = 'Buscando actualizaciones...';
+    try {
+        const { check } = window.__TAURI__.updater;
+        const update = await check();
+        if (update) {
+            splashStatus.textContent = 'Actualizando a v' + update.version + '...';
+            await update.downloadAndInstall();
+            const { relaunch } = window.__TAURI__.process;
+            await relaunch();
+            return;
+        }
+    } catch (e) {
+        console.log('Update check failed:', e);
+    }
 
     showScreen('selector');
     buildSelector();

@@ -62,6 +62,7 @@ fn img2braille_dir() -> PathBuf { app_data_dir().join("img2braille") }
 fn img2braille_local_dir() -> PathBuf { app_data_dir().join("img2braille-local") }
 fn tools_dir() -> PathBuf { app_data_dir().join("bin") }
 
+const IMG2BRAILLE_LOCAL_VERSION: i32 = 2;
 const IMG2BRAILLE_LOCAL_SCRIPT: &str = include_str!("img2braille_local.py");
 
 fn resolve_python() -> Result<std::path::PathBuf, String> {
@@ -113,6 +114,43 @@ fn check_tool(name: &str) -> bool {
         "img2braille_local" => img2braille_local_dir().join("script.py").exists(),
         "jp2b" => tools_dir().join("jp2b.exe").exists() || go_dir().join("bin").join("jp2b.exe").exists() || command_exists("jp2b"),
         _ => command_exists(name),
+    }
+}
+
+#[tauri::command]
+async fn ensure_img2braille_local() -> Result<String, String> {
+    let dir = img2braille_local_dir();
+    let script = dir.join("script.py");
+
+    if script.exists() {
+        if let Ok(content) = std::fs::read_to_string(&script) {
+            for line in content.lines() {
+                if line.starts_with("IMG2BRAILLE_LOCAL_VERSION") {
+                    if let Some(val) = line.split('=').nth(1) {
+                        let val = val.trim();
+                        if val == IMG2BRAILLE_LOCAL_VERSION.to_string() {
+                            return Ok("img2braille-local actualizado".to_string());
+                        }
+                    }
+                }
+            }
+        }
+        std::fs::remove_dir_all(&dir).ok();
+    }
+
+    std::fs::create_dir_all(&dir).map_err(|e| format!("Error creando directorio: {}", e))?;
+    std::fs::write(dir.join("script.py"), IMG2BRAILLE_LOCAL_SCRIPT)
+        .map_err(|e| format!("Error guardando el motor local: {}", e))?;
+
+    let py_exe = resolve_python()?;
+    let output = tokio::task::spawn_blocking(move || {
+        silent_cmd_path(&py_exe).args(["-m", "pip", "install", "Pillow"]).output()
+    }).await.unwrap_or_else(|_| Err(std::io::Error::new(std::io::ErrorKind::Other, "fail")))
+      .map_err(|e| format!("No se pudo ejecutar pip: {}", e))?;
+    if output.status.success() {
+        Ok("img2braille-local auto-actualizado".to_string())
+    } else {
+        Err(String::from_utf8_lossy(&output.stderr).to_string())
     }
 }
 
@@ -481,11 +519,18 @@ fn open_url(url: String) -> Result<(), String> {
 
 fn main() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_process::init())
+        .setup(|app| {
+            #[cfg(desktop)]
+            app.handle().plugin(tauri_plugin_updater::Builder::new().build())?;
+            Ok(())
+        })
         .invoke_handler(tauri::generate_handler![
             check_tool, install_tool, uninstall_tool,
             uninstall_img2braille, uninstall_img2braille_local, uninstall_jp2b,
             install_python, install_go, install_img2braille, install_img2braille_local, install_jp2b,
             convert_artty, convert_img2braille, convert_img2braille_local, convert_jp2b,
+            ensure_img2braille_local,
             save_temp_image, open_url
         ])
         .run(tauri::generate_context!())

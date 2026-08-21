@@ -1,4 +1,5 @@
 """Bundled img2braille variant with optional output height and mobile rendering support."""
+IMG2BRAILLE_LOCAL_VERSION = 2
 import argparse
 from PIL import Image, ImageOps
 
